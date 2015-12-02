@@ -11,29 +11,36 @@ ZumoReflectanceSensorArray SLKReflectanceSensors;
 
 int lastError = 0;
 
-const int MAX_SPEED = 300;
+
+const int MAX_SPEED = 200;
   
 void setup() {
-  Serial.begin(9600);
   // put your setup code here, to run once:
-  pinMode(13, OUTPUT);
   SLKButton.waitForButton();
   SLKReflectanceSensors.init();
   customCalibration();
 }
 
 void loop() {
+  
   unsigned int sensors[6];
-
   int position = SLKReflectanceSensors.readLine(sensors);
 
-for (byte i = 0; i < 6; i++)
- {
-   Serial.print(i);
-   Serial.println(sensors[i]); 
- }
- Serial.println(position);
- //delay(1000);
+
+  if (position <= 0 || position >= 5000){
+    SLKMotors.setSpeeds(100, 100);
+  }else {
+    moveBotOnLine();
+  }
+  
+}
+
+
+
+void moveBotOnLine(){
+  unsigned int sensors[6];
+  int position = SLKReflectanceSensors.readLine(sensors);
+ 
   int error = position - 2500;
 
   int speedDifference = error / 4 + 6 * (error - lastError);
@@ -51,9 +58,8 @@ for (byte i = 0; i < 6; i++)
     m1Speed = MAX_SPEED;
   if (m2Speed > MAX_SPEED)
     m2Speed = MAX_SPEED;
-  
+
   SLKMotors.setSpeeds(m1Speed, m2Speed);
-  
 }
 
 void customCalibration()
